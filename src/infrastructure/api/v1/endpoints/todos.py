@@ -1,24 +1,40 @@
-from typing import Annotated
+from typing import Annotated, List, Optional
 
+from ....events.event_bus import InMemoryEventBus
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from src.application.use_cases.commands.complete_todo import CompleteTodoCommand
-from src.domain.value_objects.priority import Priority
-from src.domain.value_objects.todo_status import TodoStatus
+from ....persistence.sqlalchemy.unit_of_work import SQLAlchemyUnitOfWork
 
-from src.application.use_cases.commands.create_todo import CreateTodoCommand
-from src.application.use_cases.queries.list_todos import (
+from application.use_cases.commands.complete_todo import (
+    CompleteTodoCommand,
+    CompleteTodoHandler,
+)
+from application.use_cases.commands.create_todo import (
+    CreateTodoCommand,
+    CreateTodoHandler,
+)
+from application.use_cases.commands.update_todo import (
+    UpdateTodoCommand,
+    UpdateTodoHandler,
+)
+from application.use_cases.queries.get_todo import GetTodoHandler
+from application.use_cases.queries.list_todos import (
+    ListTodosHandler,
     ListTodosQuery,
     SortField,
     SortOrder,
 )
-from src.domain.exceptions import InvalidTodoStateError, TodoNotFoundError
+from domain.exceptions import InvalidTodoStateError, TodoNotFoundError
+from domain.value_objects.priority import Priority
+from domain.value_objects.todo_status import TodoStatus
 
 from ..dependencies import (
     get_complete_todo_handler,
     get_create_todo_handler,
     get_current_user,
+    get_event_bus,
     get_get_todo_handler,
     get_list_todos_handler,
+    get_unit_of_work,
 )
 from ..schemas import (
     CreateTodoRequest,
@@ -49,11 +65,10 @@ async def create_todo(
 
     todo_id = await handler.handle(command)
 
-    # Get created todo
-    get_handler = await get_get_todo_handler()
+    get_handler = get_get_todo_handler()
     todo = await get_handler.handle(todo_id, current_user["id"])
 
-    return TodoResponse(**todo.dict())
+    return TodoResponse(**todo.__dict__)
 
 
 @router.get("/", response_model=TodoListResponse)
@@ -85,7 +100,7 @@ async def list_todos(
     todos, total = await handler.handle(query)
 
     return TodoListResponse(
-        items=[TodoResponse(**todo.dict()) for todo in todos],
+        items=[TodoResponse(**todo.__dict__) for todo in todos],
         total=total,
         limit=limit,
         offset=offset,
@@ -101,7 +116,7 @@ async def get_todo(
     """Get a specific todo"""
     try:
         todo = await handler.handle(todo_id, current_user["id"])
-        return TodoResponse(**todo.dict())
+        return TodoResponse(**todo.__dict__)
     except TodoNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=f"Todo {todo_id} not found"
@@ -120,14 +135,46 @@ async def complete_todo(
 
         await handler.handle(command)
 
-        # Get updated todo
-        get_handler = await get_get_todo_handler()
+        get_handler = get_get_todo_handler()
         todo = await get_handler.handle(todo_id, current_user["id"])
 
-        return TodoResponse(**todo.dict())
+        return TodoResponse(**todo.__dict__)
     except TodoNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=f"Todo {todo_id} not found"
         )
     except InvalidTodoStateError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.put("/{todo_id}", response_model=TodoResponse)
+async def update_todo(
+    todo_id: str,
+    request: UpdateTodoRequest,
+    current_user: Annotated[dict, Depends(get_current_user)],
+    uow: Annotated[SQLAlchemyUnitOfWork, Depends(get_unit_of_work)],
+    event_bus: Annotated[InMemoryEventBus, Depends(get_event_bus)],
+):
+    """Update a todo"""
+    handler = UpdateTodoHandler(uow, event_bus)
+    command = UpdateTodoCommand(
+        todo_id=todo_id,
+        title=request.title,
+        description=request.description,
+        priority=Priority(request.priority) if request.priority else None,
+        due_date=request.due_date,
+        tags=request.tags,
+        user_id=current_user["id"],
+    )
+
+    try:
+        await handler.handle(command)
+
+        get_handler = get_get_todo_handler()
+        todo = await get_handler.handle(todo_id, current_user["id"])
+
+        return TodoResponse(**todo.__dict__)
+    except TodoNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Todo {todo_id} not found"
+        )
