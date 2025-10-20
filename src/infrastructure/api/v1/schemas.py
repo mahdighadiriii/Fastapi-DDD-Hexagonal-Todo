@@ -1,7 +1,6 @@
 from datetime import datetime
-from enum import IntEnum
+from enum import IntEnum, Enum
 from typing import List, Optional
-
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -12,7 +11,7 @@ class PriorityEnum(IntEnum):
     URGENT = 4
 
 
-class TodoStatusEnum(str, BaseModel):
+class TodoStatusEnum(str, Enum):
     PENDING = "pending"
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
