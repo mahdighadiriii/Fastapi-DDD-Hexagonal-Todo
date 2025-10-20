@@ -1,22 +1,16 @@
 class DomainException(Exception):
-    """
-    Base class for domain exceptions.
-    """
+    """Base domain exception"""
 
     pass
 
 
-class TodoNotFoundException(DomainException):
-    """
-    Exception raised when a todo is not found.
-    """
+class TodoNotFoundError(DomainException):
+    """Raised when a todo is not found"""
 
     pass
 
 
 class InvalidTodoStateError(DomainException):
-    """
-    Exception raised when a todo has an invalid state.
-    """
+    """Raised when todo state transition is invalid"""
 
     pass
