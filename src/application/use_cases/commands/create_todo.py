@@ -2,14 +2,13 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
-from src.domain.entities.todo import Todo
-from src.domain.value_objects.priority import Priority
-from src.domain.value_objects.todo_id import TodoId
-from src.domain.value_objects.todo_status import TodoStatus
-
-from src.application.interfaces.event_bus import EventBus
-from src.application.interfaces.unit_of_work import UnitOfWork
-from src.domain.events.todo_events import TodoCreated
+from domain.entities.todo import Todo
+from domain.events.todo_events import TodoCreated
+from domain.value_objects.priority import Priority
+from domain.value_objects.todo_id import TodoId
+from domain.value_objects.todo_status import TodoStatus
+from ...interfaces.event_bus import EventBus
+from ...interfaces.unit_of_work import UnitOfWork
 
 
 @dataclass
