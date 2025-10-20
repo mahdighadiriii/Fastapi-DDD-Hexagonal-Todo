@@ -1,12 +1,13 @@
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
-from sqlalchemy import and_, func, or_, select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.domain.entities.todo import Todo
-from src.domain.repositories.todo_repository import TodoRepository
-from src.domain.value_objects.priority import Priority
-from src.domain.value_objects.todo_id import TodoId
-from src.domain.value_objects.todo_status import TodoStatus
+
+from domain.entities.todo import Todo
+from domain.repositories.todo_repository import TodoRepository
+from domain.value_objects.priority import Priority
+from domain.value_objects.todo_id import TodoId
+from domain.value_objects.todo_status import TodoStatus
 
 from .models import TodoModel
 
