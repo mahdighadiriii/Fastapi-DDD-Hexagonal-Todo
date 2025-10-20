@@ -1,10 +1,10 @@
 from dataclasses import dataclass
+from typing import Optional, List
 from enum import Enum
-from typing import List, Optional
 
-from src.application.dto.todo_dto import TodoDTO
-from src.domain.value_objects.priority import Priority
-from src.domain.value_objects.todo_status import TodoStatus
+from domain.value_objects.todo_status import TodoStatus
+from domain.value_objects.priority import Priority
+from ...dto.todo_dto import TodoDTO
 
 
 class SortField(Enum):
@@ -35,9 +35,8 @@ class ListTodosQuery:
 class ListTodosHandler:
     def __init__(self, todo_read_repository):
         self.todo_read_repository = todo_read_repository
-
+    
     async def handle(self, query: ListTodosQuery) -> tuple[List[TodoDTO], int]:
-        # Use read-optimized repository
         todos, total = await self.todo_read_repository.find_with_filters(
             user_id=query.user_id,
             status=query.status,
@@ -47,11 +46,11 @@ class ListTodosHandler:
             sort_by=query.sort_by.value,
             sort_order=query.sort_order.value,
             limit=query.limit,
-            offset=query.offset,
+            offset=query.offset
         )
-
+        
         return [self._to_dto(todo) for todo in todos], total
-
+    
     def _to_dto(self, todo) -> TodoDTO:
         return TodoDTO(
             id=str(todo.id),
@@ -64,5 +63,5 @@ class ListTodosHandler:
             completed_at=todo.completed_at,
             due_date=todo.due_date,
             tags=todo.tags,
-            is_overdue=todo.is_overdue(),
+            is_overdue=todo.is_overdue()
         )
