@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, Callable, Type
 
-from src.domain.events.base import DomainEvent
+from domain.events.base import DomainEvent
 
 EventHandler = Callable[[DomainEvent], Any]
 
