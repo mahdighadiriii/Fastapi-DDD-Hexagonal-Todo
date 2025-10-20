@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.application.interfaces.unit_of_work import UnitOfWork
+from application.interfaces.unit_of_work import UnitOfWork
 
 from .repositories import SQLAlchemyTodoRepository
 
@@ -15,7 +15,6 @@ class SQLAlchemyUnitOfWork(UnitOfWork):
 
     async def __aexit__(self, *args):
         await self.rollback()
-        await self.session.close()
 
     async def commit(self):
         await self.session.commit()
