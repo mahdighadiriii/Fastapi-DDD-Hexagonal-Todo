@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Generic, TypeVar
 
-from src.domain.repositories.todo_repository import TodoRepository
+from domain.repositories.todo_repository import TodoRepository
 
 T = TypeVar("T")
 
