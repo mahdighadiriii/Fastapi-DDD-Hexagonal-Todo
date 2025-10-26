@@ -63,18 +63,18 @@ This project follows the **Hexagonal Architecture** pattern, organizing code int
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    Infrastructure Layer                  │
+│                    Infrastructure Layer                 │
 │  (FastAPI, SQLAlchemy, Event Handlers, External APIs)   │
 └─────────────────────┬───────────────────────────────────┘
                       │ Adapters
 ┌─────────────────────┴───────────────────────────────────┐
-│                    Application Layer                     │
-│     (Use Cases, DTOs, Interfaces/Ports)                  │
+│                    Application Layer                    │
+│     (Use Cases, DTOs, Interfaces/Ports)                 │
 └─────────────────────┬───────────────────────────────────┘
                       │ Use Cases
 ┌─────────────────────┴───────────────────────────────────┐
-│                      Domain Layer                        │
-│  (Entities, Value Objects, Domain Events, Repositories)  │
+│                      Domain Layer                       │
+│  (Entities, Value Objects, Domain Events, Repositories) │
 └─────────────────────────────────────────────────────────┘
 ```
 
